@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import java.util.List;
@@ -21,11 +22,30 @@ public class SimpleAdapter extends RecyclerView.Adapter<MyViewHolder> {
     LayoutInflater mInflater;
     List<String> mDatas;
 
+    OnItemClickListener onItemClickListener = null;
+
+    public void setOnItemClickListener(OnItemClickListener listener){
+        onItemClickListener = listener;
+    }
+
     public SimpleAdapter(Context mContext,List<String> mDatas){
         this.mContext = mContext;
         mInflater = LayoutInflater.from(mContext);
         this.mDatas = mDatas;
     }
+
+    public void addData(int pos){
+        mDatas.add(pos,"insert one");
+        //notifyDataSetChanged();
+        notifyItemInserted(pos);
+    }
+
+    public void deleteData(int pos){
+        mDatas.remove(pos);
+        //notifyDataSetChanged();
+        notifyItemRemoved(pos);
+    }
+
 
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -35,8 +55,25 @@ public class SimpleAdapter extends RecyclerView.Adapter<MyViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(MyViewHolder holder, int position) {
+    public void onBindViewHolder(final MyViewHolder holder, final int position) {
         holder.tv.setText(mDatas.get(position));
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (onItemClickListener!=null) {
+                    onItemClickListener.OnItemClick(v, holder.getLayoutPosition());
+                }
+            }
+        });
+        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if (onItemClickListener!=null) {
+                    onItemClickListener.OnItemLongClick(v, position);
+                }
+                return true;
+            }
+        });
     }
 
 
@@ -44,12 +81,15 @@ public class SimpleAdapter extends RecyclerView.Adapter<MyViewHolder> {
     public int getItemCount() {
         return mDatas.size();
     }
+
 }
 class MyViewHolder extends RecyclerView.ViewHolder {
     TextView tv;
+    FrameLayout frameLayout;
 
     public MyViewHolder(View itemView) {
         super(itemView);
         tv = (TextView) itemView.findViewById(R.id.id_tv);
+        frameLayout = (FrameLayout) itemView.findViewById(R.id.frame);
     }
 }
